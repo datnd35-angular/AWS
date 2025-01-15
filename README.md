@@ -773,3 +773,197 @@ Một số load balancers có thể được thiết lập là **internal (riên
 
 - **Security Group của EC2**:  
   Chỉ cho phép **Security Group của Load Balancer** truy cập vào **port 80**. Điều này có nghĩa là bạn chỉ có thể truy cập đến EC2 thông qua Load Balancer.
+
+## **Application Load Balancer Target Groups (Nhóm Services)**
+
+![image](https://github.com/user-attachments/assets/d0745d8c-a1cc-4336-9da6-18db03e8a68c)
+
+- **Một nhóm EC2 instances**.
+- **Một nhóm container**.
+- **Lambda functions** – Yêu cầu HTTP được chuyển đổi thành một sự kiện JSON.
+- **IP address** – Phải là địa chỉ **private IP** (có thể là một server trong data center hoặc EC2, tóm lại chỉ cần private IP là được).
+- **ALB có thể định tuyến tới nhiều target groups**.
+- **Target group có cơ chế health check**.
+
+## **Application Load Balancer - Good to Know**  
+
+![image](https://github.com/user-attachments/assets/d94c0d90-5721-4386-aa8a-6e6f271321df)
+
+**Biết thì tốt hơn**:
+
+- Khi **client request** đến **load balancer** và load balancer **routing traffic** đến **EC2**, khi đọc log tại EC2, bạn sẽ không thấy địa chỉ IP của client, mà chỉ thấy **private IP của load balancer**.  
+- Tuy nhiên, nếu bạn muốn lấy **client IP**, bạn cần phải lấy từ **X-Forwarded-For** (tự tìm hiểu thêm).
+
+## **Network Load Balancer (v2)**
+
+- **Hoạt động ở Layer 4**: Tầng **TCP và UDP** (phù hợp với ứng dụng game).
+- **Độ trễ**: Khoảng **100ms**, gấp 4 lần ALB (40ms).
+- **Sử dụng** cho các ứng dụng cần **performance cực kỳ nhanh**.
+- **Không có trong Free Tier**: Demo sẽ mất phí.
+
+## **Network Load Balancer – Target Groups**
+
+- **Rules**: Dùng để **route** tới các **target groups** khác nhau.
+
+### **Các loại Target Groups**:
+- **EC2 instances**.
+- **IP Addresses** – Phải là **private IPs**.
+- **Application Load Balancer**.
+
+- **Health Checks**: Hỗ trợ các giao thức **TCP**, **HTTP**, và **HTTPS**.
+
+
+
+## **Gateway Load Balancer**
+
+![image](https://github.com/user-attachments/assets/f75421eb-2ae5-4175-9b32-5c298e8a0ab5)
+
+- **Cơ chế bảo vệ application**:  
+  Bằng cách sử dụng một **target group** được vận hành bởi bên thứ 3, giúp phát hiện và ngăn chặn các bất thường của hệ thống (ví dụ: traffic mang tính tấn công).
+  
+- **Không được sử dụng nhiều**.
+
+## **Gateway Load Balancer – Target Groups**
+
+![image](https://github.com/user-attachments/assets/09b7d2bd-026a-4c4e-b0d7-e7bf369b0c2c)
+
+### **Các loại Target Groups**:
+- **EC2 instances**.
+- **IP Addresses** – Phải là **private IPs**.
+
+## **Sticky Sessions (Session Affinity)**
+
+![image](https://github.com/user-attachments/assets/f223a03f-f3c7-435f-b1a1-2a622e00dbda)
+
+- **Khái niệm**:  
+  Khi người dùng request, đôi khi sẽ được route tới **server này**, đôi khi lại là **server khác**. Tuy nhiên, khi người dùng **login**, session cần được lưu trữ ở một nơi để khi chuyển trang (mua hàng, thanh toán,...), hệ thống kiểm tra xem session còn tồn tại không. 
+  - Vấn đề: Mỗi lần chuyển trang, bạn có thể được route tới một **server khác**, mà server này không có session của bạn, dẫn đến **logout**.
+  
+- **Giải pháp**:  
+  Sử dụng **Sticky Sessions** để giữ người dùng luôn gắn liền với cùng một server trong suốt phiên làm việc.
+
+- **Dịch vụ lưu trữ session data**:  
+  Trong thực tế, có thể sử dụng **DynamoDB** hoặc **ElastiCache** để lưu session data, thay vì các cơ sở dữ liệu như **SQL**.  
+  - **Lý do**: Session data cần được truy xuất liên tục với **hiệu suất cao** và có thời gian lưu trữ ngắn. Các cơ sở dữ liệu như SQL không đủ hiệu suất cho yêu cầu này và không có cơ chế tự xoá dữ liệu khi hết hạn.
+ 
+## **Cross-Zone Load Balancing**
+
+- **Đây là một thiết lập (setting)**:  
+  Khi không sử dụng **Cross-Zone Load Balancing**, traffic sẽ được phân bố **không đồng đều**. Ví dụ, một server có thể chịu 25% tải, trong khi server khác chỉ chịu 6.25% tải.
+
+![image](https://github.com/user-attachments/assets/d95d7db0-50ce-4d31-99f5-5401e3628112)
+
+- **Khi sử dụng Cross-Zone Load Balancing**, traffic sẽ được phân bố **đồng đều** trên tất cả các server. Ví dụ, mỗi server sẽ chịu **10%** tải.
+
+![image](https://github.com/user-attachments/assets/55fdb161-13de-4f41-aebb-e372416bbd50)
+
+
+## **SSL/TLS - Basics**
+
+- **Tạo và liên kết SSL/TLS** với **load balancer** (Network Load Balancer hoặc Application Load Balancer) để đảm bảo **security**.
+  
+- Bạn có thể mua chứng chỉ SSL/TLS từ **bên thứ 3** hoặc sử dụng dịch vụ **ACM (AWS Certificate Manager)** của AWS.
+
+## **SSL – Server Name Indication (SNI)**
+
+![image](https://github.com/user-attachments/assets/a893d8c3-f3e5-4bb8-b0b0-cb184e4b6f30)
+
+- **Quản lý nhiều chứng chỉ SSL** trên cùng một **ALB (Application Load Balancer)**.
+  
+- ALB có thể routing đến nhiều **target group** khác nhau, mỗi **target group** có thể có một **domain riêng**. Mỗi domain sẽ có một **chứng chỉ SSL riêng**.
+
+- **SNI** giúp kết hợp và quản lý **nhiều chứng chỉ SSL** cho cùng một **ALB**.
+
+## **Connection Draining**
+
+![image](https://github.com/user-attachments/assets/cbfdec5b-4ec0-47eb-bf6d-8438f5e47a96)
+
+- Khi **Load Balancer** cân bằng tải cho các server, có thể xảy ra tình trạng một server bị **fail** vì lý do nào đó. Lúc này, server sẽ chuyển sang trạng thái **de-registering** hoặc **unhealthy**.
+  
+- **In-flight requests**: Là những yêu cầu vẫn đang chờ xử lý khi load balancer chuyển hướng đến server bị lỗi. Thời gian hoàn thành của các yêu cầu này sẽ phụ thuộc vào cấu hình của bạn (từ 0 đến 3600 giây).
+
+- **Ví dụ**: Nếu bạn đặt **60 giây**, sau thời gian này:
+  - Nếu server phục hồi, các yêu cầu sẽ tiếp tục được xử lý.
+  - Nếu không, server sẽ **fail** và trả về kết quả lỗi (ví dụ: lỗi **500**).
+ 
+## **Auto Scaling Group in AWS**
+
+![image](https://github.com/user-attachments/assets/15005308-9f4b-4422-83da-0ce0c82a1086)
+
+- Trong thực tế, tải trên ứng dụng sẽ thay đổi theo mức độ traffic, có thể tăng cao hoặc giảm. Để đáp ứng yêu cầu này, cần có cơ chế tự động tăng hoặc giảm số lượng **EC2 instances**. AWS cung cấp dịch vụ **Auto Scaling Group**.
+
+- **Cấu hình**:
+  - **Min, Max, và Desired**: Bạn đặt số lượng EC2 tối thiểu, tối đa và số lượng mong muốn.
+  
+- **Tính năng**:
+  - **Scale out**: Tự động đăng ký EC2 mới vào **load balancer** khi cần thiết.
+  - **Tự động tạo EC2 mới**: Trong trường hợp một EC2 bị **terminated** hoặc **unhealthy**, Auto Scaling Group sẽ tự động tạo một EC2 mới để thay thế.
+  - Trong **trường hợp bình thường**, Auto Scaling Group sẽ duy trì số lượng EC2 theo mức **Desired**, không vượt quá số lượng **Max** và không ít hơn số lượng **Min**.
+
+
+ ## **Auto Scaling Group in AWS With Load Balancer**
+
+![image](https://github.com/user-attachments/assets/8e02f6b0-88ec-4819-87f3-362de60d5832)
+
+- Khi **EC2 instances** mới được tạo ra trong **Auto Scaling Group**, chúng sẽ tự động được **thêm vào Load Balancer** để tham gia vào quá trình cân bằng tải.
+
+## **Thuộc Tính của Auto Scaling Group**
+
+![image](https://github.com/user-attachments/assets/a2694f82-c29f-48bd-bc70-59a3c1ddc7ab)
+
+- **Launch Template**: Định nghĩa cấu hình khi EC2 instances được tạo ra.
+  - **AMI + Loại Instance**: Cấu hình AMI và loại instance (ví dụ: 1 CPU, 2GB RAM).
+  - **EC2 User Data**: Dữ liệu người dùng cấu hình khi khởi tạo EC2.
+  - **EBS Volumes**: Cấu hình các ổ đĩa EBS cho EC2 instances.
+  - **Security Groups**: Nhóm bảo mật cho EC2 instances.
+  - **SSH Key Pair**: Cặp khóa SSH để truy cập EC2.
+  - **IAM Roles**: Các vai trò IAM cần cho EC2 instances.
+  - **Network + Subnets**: Thông tin về mạng và subnet của EC2.
+  - **Thông tin Load Balancer**: Thông tin cấu hình load balancer mà EC2 sẽ tham gia.
+=> đây là Launch Template nó bao gồm những thông tin này, khi tạo ra ec2 thì phải đáp ứng config template trước đó 
+
+- **Scaling Policies**: Định nghĩa các điều kiện và cách thức thực hiện **scale in/out** dựa trên các yếu tố nhất định.
+
+## **Auto Scaling - CloudWatch Alarms & Scaling**
+
+- **CloudWatch Alarms** giám sát các **metric** như mức sử dụng trung bình của **EC2**, **RAM**, hoặc **Network In/Out** của các EC2 instances trong **Auto Scaling Group**.
+- Khi một **metric** đạt hoặc vượt qua ngưỡng đã thiết lập trước, **CloudWatch Alarms** sẽ kích hoạt **scale in/out** tự động để điều chỉnh số lượng EC2 instances sao cho phù hợp với yêu cầu tài nguyên.
+
+
+## **Auto Scaling Groups – Scaling Policies**
+
+1. **Dynamic Scaling**
+   - **Target Tracking Scaling**: Chỉ định một mức sử dụng cụ thể (ví dụ: 40% CPU). Hệ thống sẽ tự động tăng hoặc giảm số lượng EC2 instances để giữ mức sử dụng ở gần con số này. Đây là phương pháp phổ biến hơn so với **Simple / Step Scaling**.
+   - **Simple / Step Scaling**: Đặt ngưỡng cao và thấp cho các cảnh báo:
+     - Khi cảnh báo CloudWatch kích hoạt (ví dụ: CPU > 70%), thêm 2 đơn vị EC2.
+     - Khi cảnh báo CloudWatch kích hoạt (ví dụ: CPU < 30%), giảm 1 đơn vị EC2.
+
+2. **Scheduled Scaling**: Thiết lập lịch để tăng hoặc giảm số lượng EC2 vào một thời điểm cụ thể, giúp điều chỉnh tài nguyên theo kế hoạch đã định.
+
+3. **Predictive Scaling**: Sử dụng dữ liệu lịch sử (ví dụ: vài tuần trước) để dự đoán và thực hiện **scale in/out** cho các khoảng thời gian sắp tới.
+
+![image](https://github.com/user-attachments/assets/7b422c57-0110-4bfd-900f-6401e40c8372)
+
+## **Các Chỉ Số Quyết Định Scale hay Không**
+
+![image](https://github.com/user-attachments/assets/e24d6868-1282-4671-8195-d4ba8009abd6)
+
+- **CPUUtilization**: Mức sử dụng CPU trung bình trên các instance.
+- **RequestCountPerTarget**: Đảm bảo số lượng yêu cầu trên mỗi EC2 instance được duy trì ổn định.
+- **Average Network In / Out**: Dùng khi ứng dụng của bạn phụ thuộc nhiều vào mạng.
+- **Bất kỳ chỉ số tùy chỉnh nào**: Ví dụ:
+  - Giả sử bạn muốn theo dõi số lượng đơn hàng chưa xử lý trong ứng dụng thương mại điện tử. Bạn có thể gửi số lượng đơn hàng này lên CloudWatch dưới dạng custom metric, ví dụ:
+  ```bash
+  aws cloudwatch put-metric-data --metric-name PendingOrders --namespace ECommerceApp --unit Count --value 150
+  ```
+  - Sau đó, cấu hình **CloudWatch Alarm** để mở rộng hoặc thu nhỏ **Auto Scaling Group** dựa trên số lượng đơn hàng, ví dụ:
+    - Khi **PendingOrders > 200**, mở rộng quy mô.
+    - Khi **PendingOrders < 50**, giảm quy mô.
+
+## **Auto Scaling Groups - Scaling Cooldowns**
+
+![image](https://github.com/user-attachments/assets/7cf2c3a0-3cf7-4158-8f5e-cbc846d52c98)
+
+- **Cooldowns**: Sau khi quá trình scaling diễn ra, bạn có **300s** để thực hiện thời gian cooldowns.
+- Trong thời gian cooldown, **ASG** sẽ không terminated hoặc khởi tạo thêm bất kỳ EC2 nào, giúp các metric ổn định.
+- **Sử dụng AMI sẵn có**: Để giúp server phục vụ request nhanh nhất, ví dụ: khi tạo EC2 làm web server, bạn cần cài đặt nhiều thứ như Apache, Nginx, v.v. Tuy nhiên, bạn có thể cài đặt trước và đóng gói mọi thứ cần thiết trong một AMI để tiết kiệm thời gian khi triển khai.
