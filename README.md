@@ -613,3 +613,163 @@ EBS Volumes có 6 loại:
 - Hệ thống file chia sẻ giữa nhiều máy chủ.
 - EBS (io1/io2) có cơ chế chia sẻ được cho nhiều EC2, nhưng trong thực tế, thường sử dụng hệ thống file như EFS vì EBS (io1/io2) có chi phí khá cao.
 - Ví dụ: EFS thích hợp cho việc chia sẻ hệ thống file ảnh giữa nhiều server.
+
+# **High Availability & Scalability**
+
+## **Scalability & High Availability**
+
+Cho dù ứng dụng của chúng ta chạy trên cloud hay on-premise, chúng ta vẫn phải quan tâm đến 2 yếu tố này:
+
+### **Scalability**  
+Ứng dụng của mình phải đáp ứng được lượng tải của server khi cao lúc thấp. Nó cần phải mở rộng hoặc thu hẹp, tăng số lượng server hoặc giảm số lượng server để đáp ứng traffic.
+
+Có 2 loại **Scalability**:  
+1. **Scalability theo chiều dọc (Vertical Scaling)**  
+2. **Scalability theo chiều ngang (Horizontal Scaling)**
+
+## **Khả năng Mở Rộng Theo Chiều Dọc (Vertical Scalability)**
+
+![image](https://github.com/user-attachments/assets/51e899e4-af84-488f-a488-db6b56b51efc)
+
+**Khả năng mở rộng theo chiều dọc**: Ví dụ, hiện tại mình là một junior developer, nhưng sau 2 hoặc 3 năm nữa, mình trở thành một senior developer, lúc đó mình có thể đảm nhận nhiều task hơn và làm việc với hiệu suất tốt hơn.
+
+### **1. Ví dụ**:  
+Ứng dụng của bạn chạy trên một instance t2.micro, và bây giờ bạn nâng cấp lên t2.large (điều này sẽ tăng RAM, CPU, core, ...).
+
+### **2. Lưu ý**:  
+Scalability theo chiều dọc thường được áp dụng cho **database** và **elastic cache**.
+
+## **Khả năng Mở Rộng Theo Chiều Ngang (Horizontal Scalability)**
+
+![image](https://github.com/user-attachments/assets/97006978-173b-4cbc-b5ec-245eacebd2fb)
+
+### **1. Khả năng mở rộng theo chiều ngang**:  
+Mình sẽ nhân rộng ra, ví dụ một operator có thể đảm nhận một task, giờ nếu có 6 operators, mình sẽ đảm nhận được 6 tasks.
+
+### **2. Hiểu đơn giản**:  
+Là việc tăng hoặc giảm số lượng **EC2 instances**.
+
+### **3. Ứng dụng**:  
+Điều này rất phổ biến trong **web applications**.
+
+
+## **High Availability: Tính Sẵn Sàng**
+
+![image](https://github.com/user-attachments/assets/a8a4ece3-f4d7-4ac0-a640-1c558a0dec86)
+
+**Tính sẵn sàng cao**:  
+Hệ thống của mình, cho dù gặp vấn đề nào đó, vẫn phải đáp ứng được traffic truy cập của người dùng. Đây gọi là tính sẵn sàng cao.
+
+**Ví dụ**:  
+Có văn phòng ở New York và San Francisco. Nếu văn phòng ở New York nghỉ, cúp điện, hoặc vì lý do nào đó không làm việc, văn phòng ở San Francisco vẫn có thể tiếp tục hoạt động và phục vụ khách hàng, luôn đảm bảo tính sẵn sàng.
+
+## **Độ Sẵn Sàng Cao và Khả Năng Mở Rộng Cho EC2**
+
+### **1. Scale Theo Chiều Dọc**  
+- **Tăng size instance (scale up/down)**  
+  Từ: t2.nano – 0.5G RAM, 1 vCPU  
+  Đến: u-12tb1.metal – 12.3 TB RAM, 448 vCPUs  
+
+### **2. Scale Theo Chiều Ngang**  
+- **Tăng số lượng instances (scale out/in)**  
+- **Auto Scaling Group**: Dựa vào các điều kiện để kích hoạt scale out hoặc scale in  
+- **Load Balancer**: Cân bằng tải cho các server ở phía dưới (ví dụ, 2 servers dùng để scale theo chiều ngang)
+
+### **3. Độ Sẵn Sàng Cao**  
+- Chạy ứng dụng của mình trên một server duy nhất có thể gây rủi ro nếu server đó gặp sự cố. Tuy nhiên, để tăng tính sẵn sàng, ứng dụng sẽ chạy trên ít nhất 2 server, mỗi server ở một Availability Zone (AZ).  
+- **Mô hình**:  
+  - **Auto Scaling Group**: Chia ra cho nhiều AZ  
+  - **Load Balancer**: Cân bằng tải trên nhiều AZ
+ 
+## **What is Load Balancing?**
+
+![image](https://github.com/user-attachments/assets/0ffe7d50-6989-410d-86dc-fd79b95496b8)
+
+**Cân Bằng Tải**:  
+Đơn giản, khi người dùng gửi yêu cầu, load balancer sẽ nhận và phân phối tải cho các server bên dưới. Mục tiêu là không để tất cả yêu cầu chạy trên một server duy nhất mà chia đều cho nhiều server, đảm bảo hiệu suất và tính ổn định.
+
+
+## **Tại Sao Sử Dụng Load Balancer?**
+
+- **Chia tải cho nhiều downstream instance**:  
+  Những cái gì sau load balancer gọi là downstream instance (như EC2), còn những gì trước load balancer gọi là upstream instance.
+
+- **Health Check**:  
+  Load balancer có cơ chế kiểm tra sức khỏe của các instance. Nếu instance nào báo unhealthy, nó sẽ bị loại bỏ khỏi cân bằng tải, đảm bảo người dùng không gửi yêu cầu đến một server không thể phục vụ.
+
+- **Cung cấp SSL termination (HTTPS)**:  
+  Cho phép người dùng sử dụng HTTPS để truy cập đến load balancer, bảo mật giao tiếp.
+
+- **Áp dụng cơ chế stickiness với cookies**:  
+  Giúp duy trì phiên làm việc của người dùng với một server nhất định, tạo sự ổn định trong quá trình tương tác.
+
+- **Đảm bảo độ sẵn sàng cao trên các khu vực**:  
+  Đặt EC2 instances trên nhiều Availability Zones (AZ) thay vì chỉ một AZ, giúp đảm bảo tính sẵn sàng.
+
+- **Tách biệt public traffic và private traffic**:  
+  - **Public traffic**: Những yêu cầu từ người dùng đến load balancer thông qua môi trường internet.  
+  - **Private traffic**: Những yêu cầu từ EC2 đến load balancer trong mạng nội bộ (private network).
+ 
+## **Tại Sao Sử Dụng Elastic Load Balancer?**
+
+- **Không cần setup server riêng**:  
+  Nếu không dùng dịch vụ **Elastic Load Balancer** của AWS, bạn sẽ phải tự setup một server và cài đặt một web server như **Apache**, **Nginx**, hoặc **IIS**. Việc này yêu cầu bạn phải vận hành EC2 và cấu hình, điều này có thể không đảm bảo tính **High Availability (HA)**.
+
+- **Cung cấp cấu hình đơn giản**:  
+  Elastic Load Balancer đơn giản hóa việc cấu hình và vận hành cân bằng tải, giúp tiết kiệm thời gian và công sức.
+
+- **Các dịch vụ đi kèm với Load Balancer**:
+  - **Cân bằng tải trên EC2**: Kết hợp với **EC2 Auto Scaling Groups** để scale in/out.
+  - **ECS (Elastic Container Service)**: Dùng để cân bằng tải cho các container Docker trong ECS.
+  - **AWS Certificate Manager (ACM)**: Cung cấp dịch vụ tạo certificate cho phép người dùng truy cập qua HTTPS.
+  - **CloudWatch**: Ghi lại log của load balancer.
+  - **Route 53**: Dịch vụ định tuyến.
+  - **AWS WAF (Web Application Firewall)**: Tường lửa bảo vệ ứng dụng web.
+  - **AWS Global Accelerator**: Tăng tốc hiệu suất ứng dụng toàn cầu.
+
+- **Lưu ý**:  
+  Các web server như **Apache**, **Nginx**, **IIS** là những hệ thống cân bằng tải thủ công, bạn phải tự cấu hình cho chúng, trong khi **Elastic Load Balancer** tự động quản lý và cấu hình.
+
+
+## **Kiểm Tra Sức Khỏe (Health Checks)**
+
+![image](https://github.com/user-attachments/assets/410252fc-3140-4718-9c7e-31251608f5a5)
+
+- **Health Check** sẽ luôn được thực hiện sau một khoảng thời gian nhất định (tính bằng giây).
+
+## **Các Loại Load Balancer trên AWS**
+
+![image](https://github.com/user-attachments/assets/5bc9ca1c-5dd4-47c1-a7e6-6fe79b92b5bc)
+
+Có 4 loại **Load Balancers**:
+
+1. **Classic Load Balancer (v1 - thế hệ cũ, không dùng nữa) – 2009 – CLB**  
+   Hỗ trợ: HTTP, HTTPS, TCP, SSL (TCP bảo mật).
+
+2. **Application Load Balancer (v2 - thế hệ mới) – 2016 – ALB**  
+   Hoạt động ở **Layer 7**: HTTP, HTTPS, WebSocket.
+
+3. **Network Load Balancer (v2 - thế hệ mới) – 2017 – NLB**  
+   Hoạt động ở **Layer 4**: TCP, TLS (TCP bảo mật), UDP.
+
+4. **Gateway Load Balancer – 2020 – GWLB (rất ít khi dùng)**  
+   Hoạt động ở **Layer 3 (Lớp Mạng)** – Giao thức IP.
+
+### **1. Lưu Ý**:
+- **7 Layer** là cách hai máy tính giao tiếp với nhau trong mạng nội bộ (tìm hiểu thêm về kiến thức mạng để rõ hơn).
+- Trong đề thi, các ứng dụng hoạt động ở tầng **TCP và UDP** thường là các ứng dụng **game** và **mobile game**. **TCP** là cơ chế truyền tin tin cậy, sẽ gửi lại nếu gói tin bị mất, trong khi **UDP** không gửi lại gói tin (ví dụ: live stream).
+
+### **2. Tổng Quan**:  
+Nên sử dụng các **load balancer thế hệ mới** vì chúng cung cấp nhiều tính năng hơn.
+
+Một số load balancers có thể được thiết lập là **internal (riêng tư)** hoặc **external (công khai)** ELBs.
+
+## **Load Balancer Security Groups**
+
+![image](https://github.com/user-attachments/assets/f5cf587a-f36d-454d-9d44-6280b484c9ad)
+
+- **Security Group của Load Balancer**:  
+  Cho phép **port 80 (HTTP)** hoặc **port 443 (HTTPS)** từ internet.
+
+- **Security Group của EC2**:  
+  Chỉ cho phép **Security Group của Load Balancer** truy cập vào **port 80**. Điều này có nghĩa là bạn chỉ có thể truy cập đến EC2 thông qua Load Balancer.
