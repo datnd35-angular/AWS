@@ -967,3 +967,165 @@ Một số load balancers có thể được thiết lập là **internal (riên
 - **Cooldowns**: Sau khi quá trình scaling diễn ra, bạn có **300s** để thực hiện thời gian cooldowns.
 - Trong thời gian cooldown, **ASG** sẽ không terminated hoặc khởi tạo thêm bất kỳ EC2 nào, giúp các metric ổn định.
 - **Sử dụng AMI sẵn có**: Để giúp server phục vụ request nhanh nhất, ví dụ: khi tạo EC2 làm web server, bạn cần cài đặt nhiều thứ như Apache, Nginx, v.v. Tuy nhiên, bạn có thể cài đặt trước và đóng gói mọi thứ cần thiết trong một AMI để tiết kiệm thời gian khi triển khai.
+
+
+# Amazon S3
+
+## **Section Introduction**
+
+S3 là một dịch vụ lưu trữ dữ liệu (storage) tương tự như Google Drive, cho phép:  
+- **Tải lên file (upload files)**  
+- **Tạo thư mục (create folders)**  
+
+Ngoài ra, S3 còn có khả năng liên kết với nhiều dịch vụ khác trong hệ sinh thái AWS, giúp mở rộng khả năng sử dụng và quản lý dữ liệu hiệu quả hơn.  
+
+## ** Trường hợp sử dụng Amazon S3 **
+
+<img width="311" alt="image" src="https://github.com/user-attachments/assets/d2efa3b0-5243-463c-b967-d73737b80fe6" />
+
+1. **Backup and Storage**  
+   - Lưu trữ các bản sao lưu (backup) với chi phí thấp.
+
+2. **Disaster Recovery**  
+   - Hỗ trợ phục hồi dữ liệu trong các tình huống khẩn cấp.  
+
+3. **Archive**  
+   - Lưu trữ dữ liệu lâu dài với chi phí tối ưu.
+
+4. **Hybrid Cloud Storage**  
+   - Kết hợp lưu trữ giữa hệ thống on-premise và đám mây AWS.  
+
+5. **Application Hosting**  
+   - **Landing Pages**  
+   - Blog hoặc portfolio cá nhân.  
+   - Ứng dụng web tĩnh sử dụng API từ backend.  
+   - Trang tài liệu trực tuyến.  
+   - Ứng dụng React, Angular, hoặc Vue đã được build thành các file tĩnh.  
+
+6. **Media Hosting**  
+   - Lưu trữ và phân phối các tệp phương tiện như hình ảnh, video, và âm thanh.  
+
+7. **Data Lakes & Big Data Analytics**  
+   - Xây dựng kho dữ liệu lớn và hỗ trợ phân tích dữ liệu.
+
+8. **Software Delivery**  
+   - Nén mã nguồn thành file ZIP và đẩy lên S3.  
+   - Các dịch vụ triển khai (deploy) sẽ tải ZIP này để triển khai ứng dụng.  
+
+9. **Static Website Hosting**  
+   - Lưu trữ và chạy website tĩnh được xây dựng bằng HTML, CSS.
+  
+## **Amazon S3 - Buckets**
+
+<img width="206" alt="image" src="https://github.com/user-attachments/assets/99921c78-cdbf-4dc3-bfd1-925dbc3fee49" />
+
+- **Bucket là gì?**  
+  Bucket là một "container" dùng để chứa file và thư mục, tương tự như ổ đĩa C hoặc E trên máy tính.  
+
+- **Đặc điểm của Bucket**:  
+  1. **Tên bucket phải duy nhất**  
+     - Không được trùng lặp với bất kỳ bucket nào trên toàn cầu.  
+  2. **Bucket gắn với một region cụ thể**  
+     - Mỗi bucket được liên kết với một khu vực (region) mà bạn chọn khi tạo.  
+  3. **Quy tắc đặt tên bucket**  
+     - Có các quy tắc riêng để đặt tên (ví dụ: chỉ dùng ký tự thường, số, và dấu gạch ngang).  
+
+
+
+
+
+Dưới đây là phiên bản đã được định dạng và trình bày rõ ràng hơn:  
+
+---
+
+### **Amazon S3 - Objects**  
+
+- **Object là gì?**  
+  - Một object là một file được tải lên S3.  
+  - Mỗi lần upload file, một object mới sẽ được tạo.  
+
+- **Cấu trúc và Định danh của Object**:  
+  1. **Key**  
+     - Mỗi object có một key, đóng vai trò như đường dẫn đến file đó.  
+     - Ví dụ:  
+       - `s3://my-bucket/my_file.txt`  
+       - `s3://my-bucket/my_folder1/another_folder/my_file.txt`  
+  2. **Meta Data**  
+     - Thông tin về file, chẳng hạn như kích thước, loại file, hoặc thông tin thêm từ hệ thống.  
+  3. **Tags**  
+     - Gắn thẻ để quản lý object dễ dàng hơn (ví dụ: xác định môi trường như `dev`, `staging`).  
+  4. **Version ID**  
+     - Được sử dụng để quản lý nhiều phiên bản của cùng một file (nếu bật Versioning).  
+
+- **Kích thước tối đa của Object**:  
+  - **Tối đa 5TB (5000 GB)** cho mỗi object.  
+  - Nếu file lớn hơn 5GB, nên sử dụng **Multi-Part Upload** để cải thiện tốc độ và độ tin cậy:  
+    - Ý tưởng: Băm nhỏ file thành nhiều phần rồi upload từng phần.  
+
+## **Amazon S3 - Objects**  
+
+- **Object là gì?**  
+  - Một object là một file được tải lên S3.  
+  - Mỗi lần upload file, một object mới sẽ được tạo.  
+
+- **Cấu trúc và Định danh của Object**:  
+  1. **Key**  
+     - Mỗi object có một key, đóng vai trò như đường dẫn đến file đó.  
+     - Ví dụ:  
+       - `s3://my-bucket/my_file.txt`  
+       - `s3://my-bucket/my_folder1/another_folder/my_file.txt`  
+  2. **Meta Data**  
+     - Thông tin về file, chẳng hạn như kích thước, loại file, hoặc thông tin thêm từ hệ thống.  
+  3. **Tags**  
+     - Gắn thẻ để quản lý object dễ dàng hơn (ví dụ: xác định môi trường như `dev`, `staging`).  
+  4. **Version ID**  
+     - Được sử dụng để quản lý nhiều phiên bản của cùng một file (nếu bật Versioning).  
+
+- **Kích thước tối đa của Object**:  
+  - **Tối đa 5TB (5000 GB)** cho mỗi object.  
+  - Nếu file lớn hơn 5GB, nên sử dụng **Multi-Part Upload** để cải thiện tốc độ và độ tin cậy:  
+    - Ý tưởng: Băm nhỏ file thành nhiều phần rồi upload từng phần.  
+
+
+## **Amazon S3 – Security**
+
+### **Hình thức phân quyền trong S3**  
+1. **User-Based Policy**  
+   - **Phân quyền dựa trên người dùng**:  
+     - Đây là cách phổ biến nhất, sử dụng **IAM Policies**.  
+     - Ví dụ: Khi một EC2 instance cần truy cập S3, bạn gắn IAM Policies vào **role** để cấp quyền truy cập S3 cho EC2.  
+
+2. **Resource-Based Policy**  
+   - **Phân quyền dựa trên tài nguyên**:  
+     - S3 có **Bucket Policies** độc lập không phụ thuộc vào IAM Policies.  
+     - Bucket Policies có thể cho phép các dịch vụ khác truy cập mà không cần IAM Policies.  
+
+<img width="862" alt="image" src="https://github.com/user-attachments/assets/1eb31e5c-2bc5-413e-8ded-f402a8d7ec4c" />
+
+<img width="862" alt="image" src="https://github.com/user-attachments/assets/a2939183-2461-457d-b09a-7a786e928d30" />
+
+
+### **Các cơ chế phân quyền trong S3**  
+1. **Bucket Policies**  
+   - Thiết lập quy tắc phân quyền trực tiếp cho toàn bộ bucket từ giao diện quản lý S3.  
+   - Hỗ trợ truy cập giữa các tài khoản AWS khác nhau.  
+   - **Thường được sử dụng** trong các trường hợp không thể gắn role.  
+
+2. **Object Access Control List (ACL)**  
+   - Phân quyền chi tiết ở cấp độ từng object.  
+   - **Không khuyến nghị sử dụng** do đã lỗi thời.  
+
+3. **Bucket Access Control List (ACL)**  
+   - Phân quyền cho toàn bộ bucket.  
+   - **Ít được sử dụng** và có thể bị vô hiệu hóa.  
+
+### **Lưu ý khi lựa chọn giữa IAM Policies và Bucket Policies**  
+- **Ưu tiên sử dụng IAM Policies khi có thể gắn role**.  
+- Ví dụ:  
+  - EC2 truy cập S3: Dùng IAM Policies vì EC2 có thể gắn role.  
+  - ALB truy cập S3: Dùng Bucket Policies vì ALB không hỗ trợ gắn IAM Policies.  
+
+### **Xử lý xung đột giữa IAM Policies và Bucket Policies**  
+- Khi IAM Policies cho phép truy cập nhưng Bucket Policies từ chối (Deny), kết quả cuối cùng luôn là **Deny**.  
+
+
