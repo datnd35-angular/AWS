@@ -1094,15 +1094,18 @@ Dưới đây là phiên bản đã được định dạng và trình bày rõ 
    - **Phân quyền dựa trên người dùng**:  
      - Đây là cách phổ biến nhất, sử dụng **IAM Policies**.  
      - Ví dụ: Khi một EC2 instance cần truy cập S3, bạn gắn IAM Policies vào **role** để cấp quyền truy cập S3 cho EC2.  
+<img width="862" alt="image" src="https://github.com/user-attachments/assets/1eb31e5c-2bc5-413e-8ded-f402a8d7ec4c" />
+
+<img width="862" alt="image" src="https://github.com/user-attachments/assets/a2939183-2461-457d-b09a-7a786e928d30" />
 
 2. **Resource-Based Policy**  
    - **Phân quyền dựa trên tài nguyên**:  
      - S3 có **Bucket Policies** độc lập không phụ thuộc vào IAM Policies.  
      - Bucket Policies có thể cho phép các dịch vụ khác truy cập mà không cần IAM Policies.  
 
-<img width="862" alt="image" src="https://github.com/user-attachments/assets/1eb31e5c-2bc5-413e-8ded-f402a8d7ec4c" />
+<img width="1116" alt="image" src="https://github.com/user-attachments/assets/e32688ea-1895-48c3-a6dc-2e6f33d2a4f2" />
 
-<img width="862" alt="image" src="https://github.com/user-attachments/assets/a2939183-2461-457d-b09a-7a786e928d30" />
+<img width="1005" alt="image" src="https://github.com/user-attachments/assets/2c315702-6fe7-4bc9-ab57-d4edad921a41" />
 
 
 ### **Các cơ chế phân quyền trong S3**  
@@ -1128,4 +1131,131 @@ Dưới đây là phiên bản đã được định dạng và trình bày rõ 
 ### **Xử lý xung đột giữa IAM Policies và Bucket Policies**  
 - Khi IAM Policies cho phép truy cập nhưng Bucket Policies từ chối (Deny), kết quả cuối cùng luôn là **Deny**.  
 
+## **S3 Bucket Policies**  
 
+### **Đặc điểm chính**  
+- **S3 Bucket Policies** rất giống với IAM Policies, nhưng chúng **chỉ áp dụng cho S3**.  
+- Các chính sách này được xây dựng dựa trên **JSON**.  
+- **Định dạng**: Tất cả chính sách S3 đều sử dụng cấu trúc JSON.  
+
+### **Các thành phần chính trong chính sách**  
+
+1. **Resources (Tài nguyên)**  
+   - Chỉ định các bucket và các đối tượng (object) bên trong bucket mà chính sách sẽ áp dụng.  
+   - Ví dụ:  
+     - Toàn bộ bucket: `"arn:aws:s3:::my-bucket"`  
+     - Một file cụ thể: `"arn:aws:s3:::my-bucket/my-file.txt"`  
+
+2. **Effect (Hiệu lực)**  
+   - Xác định hành động được cho phép hoặc từ chối.  
+   - Các giá trị:  
+     - `"Allow"`: Cho phép.  
+     - `"Deny"`: Từ chối.  
+
+3. **Actions (Hành động)**  
+   - Tập hợp các API mà chính sách sẽ cho phép hoặc từ chối.  
+   - Ví dụ:  
+     - `"s3:GetObject"`: Cho phép tải file.  
+     - `"s3:PutObject"`: Cho phép tải lên file.  
+
+4. **Principal (Chủ thể)**  
+   - Xác định tài khoản hoặc người dùng mà chính sách áp dụng.  
+   - Ví dụ:  
+     - Một tài khoản AWS cụ thể.  
+     - Một dịch vụ (như EC2).  
+     - `"*"`: Tất cả mọi người.  
+
+### **Ví dụ về S3 Bucket Policy**  
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::123456789012:root"
+      },
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::my-bucket/*"
+    }
+  ]
+}
+```
+
+### **Giải thích ví dụ**  
+- **Effect**: Hành động được **cho phép** (`"Allow"`).  
+- **Principal**: Tài khoản AWS có ARN `"arn:aws:iam::123456789012:root"`.  
+- **Action**: API được cho phép là `"s3:GetObject"` (tải file).  
+- **Resource**: Tất cả các đối tượng trong bucket `"my-bucket"`.  
+
+
+
+## **Bucket Settings for Block Public Access**  
+
+
+<img width="801" alt="image" src="https://github.com/user-attachments/assets/aa44e013-2fc0-43ec-ac10-c81ece3853fc" />
+
+### **Mặc định của S3**  
+- S3 mặc định **block tất cả public access** để đảm bảo an toàn.  
+- Khi tạo một bucket mới, tất cả các file (objects) trong đó đều được thiết lập là **private**, nghĩa là không ai bên ngoài có thể truy cập.  
+  - Ví dụ: Nếu bạn thử kiểm tra **Object URL**, truy cập sẽ bị từ chối.  
+
+### **Cách cấu hình để public file**  
+Nếu bạn muốn cho phép public access (truy cập công khai), cần thực hiện **2 bước sau**:  
+1. **Tắt Block Public Access**  
+   - Tắt tùy chọn "Block Public Access" trong cài đặt bucket.  
+
+2. **Thiết lập Bucket Policies**  
+   - Cấu hình chính sách bucket để cho phép người dùng bên ngoài truy cập vào file.  
+   - Ví dụ: Một Bucket Policy với hiệu lực cho phép (`Allow`) và hành động `"s3:GetObject"` để mọi người có thể tải file.  
+
+## **Amazon S3 – Static Website Hosting**  
+
+<img width="308" alt="image" src="https://github.com/user-attachments/assets/86859de2-0cd1-488c-9763-60a15dac2ca4" />
+
+### **Khái niệm**  
+- S3 hỗ trợ **Static Website Hosting**, cho phép bạn sử dụng bucket để lưu trữ và phân phối các website tĩnh (HTML, CSS, JS).  
+
+### **Cách thực hiện**  
+1. **Bật tính năng Static Website Hosting**  
+   - Truy cập vào cài đặt bucket và **enable Static Website Hosting**.  
+
+2. **Chỉ định file index tĩnh**  
+   - Chỉ định file **index** (ví dụ: `index.html`) làm file mặc định được tải khi truy cập website.  
+
+## **Amazon S3 – Versioning**  
+
+<img width="308" alt="image" src="https://github.com/user-attachments/assets/f1af5d8a-d686-4c8f-a5b0-d3edf9553444" />
+
+### **Khái niệm**  
+- **Versioning** là tính năng theo dõi và quản lý nhiều phiên bản của cùng một file (object) trong bucket.  
+- Mỗi lần chỉnh sửa và upload lại file, một **version mới** sẽ được tạo.  
+
+### **Lợi ích của Versioning**  
+- **Tránh mất dữ liệu**:  
+  - Giúp ngăn ngừa việc xóa nhầm file.  
+- **Khôi phục dữ liệu**:  
+  - Sau khi xóa, có thể khôi phục các phiên bản trước đó của file.  
+
+### **Cách sử dụng**  
+- Nếu cần quản lý phiên bản file, hãy **bật Versioning** trong cài đặt bucket.
+
+## **Amazon S3 – Replication (CRR & SRR)**  
+
+### **Khái niệm**  
+- **Replication** là tính năng cho phép S3 **đồng bộ toàn bộ nội dung** từ một S3 bucket này sang một S3 bucket khác.  
+- Quá trình này là **bất đồng bộ**, tức là dữ liệu từ bucket nguồn sẽ được sao chép sang bucket đích mà không cần phải đồng bộ ngay lập tức.  
+
+### **Các loại Replication**  
+1. **Cross-Region Replication (CRR)**  
+   - Đồng bộ dữ liệu giữa các bucket ở các **region khác nhau**.  
+   - Thường dùng khi muốn sao chép dữ liệu giữa các vùng địa lý khác nhau để tối ưu hiệu suất và độ bền.  
+
+2. **Same-Region Replication (SRR)**  
+   - Đồng bộ dữ liệu giữa các bucket trong **cùng một region**.  
+   - Thường dùng trong trường hợp sao lưu hoặc phục hồi dữ liệu trong cùng một khu vực.  
+
+### **Ứng dụng thực tế**  
+- Replication thường được sử dụng trong các trường hợp như:  
+  - **Đồng bộ log** từ nhiều region hoặc nhiều tài khoản vào một nơi duy nhất để dễ dàng phân tích và quản lý.  
