@@ -1258,4 +1258,62 @@ Nếu bạn muốn cho phép public access (truy cập công khai), cần thực
 
 ### **Ứng dụng thực tế**  
 - Replication thường được sử dụng trong các trường hợp như:  
-  - **Đồng bộ log** từ nhiều region hoặc nhiều tài khoản vào một nơi duy nhất để dễ dàng phân tích và quản lý.  
+  - **Đồng bộ log** từ nhiều region hoặc nhiều tài khoản vào một nơi duy nhất để dễ dàng phân tích và quản lý.
+
+## **Amazon S3 – Replication (Notes)**
+
+- Khi bật tính năng Replication, chỉ các object mới được replicate, các object trước đó sẽ không được replicate.
+- Để replicate các objects trước đó, có thể sử dụng **S3 Batch Replication**, cho phép thao tác hàng loạt với những files có sẵn trong S3.
+- Replication không có tính chất bắc cầu (A → B) mà không thể làm ngược lại (B → C).
+
+
+## **S3 Storage Classes: Tầng Lưu Trữ Của S3**
+
+S3 có 7 tầng lưu trữ khác nhau, mỗi tầng có mục đích và chi phí riêng:
+
+1. **Amazon S3 Standard - General Purpose**  
+   - Tầng tiêu chuẩn của S3 dành cho các mục đích chung, như lưu ảnh, video, truy cập thường xuyên hoặc hosting web.
+   - Độ khả dụng cao, thích hợp cho data truy cập thường xuyên.
+   - **Use Cases**: Big Data analytics, mobile & gaming applications, content distribution,…
+   - Đây là loại chi phí đắt nhất.
+
+2. **Amazon S3 Standard-Infrequent Access (IA)**  
+   - Giống S3 Standard (tốc độ, độ khả dụng) nhưng chi phí rẻ hơn.
+   - Dùng lưu trữ data ít truy cập (1 vài lần mỗi tuần, tháng, năm).
+   - Lấy file ra sẽ mất phí.
+   
+3. **Amazon S3 One Zone-Infrequent Access**  
+   - Giống S3 Standard-Infrequent Access, nhưng data lưu trữ chỉ trên 1 zone (độ khả dụng thấp hơn).
+   - Rẻ hơn S3 Standard-Infrequent Access.
+
+4. **Amazon S3 Glacier**  
+   - Dùng lưu trữ lâu dài cho những thứ ít đụng đến, ví dụ như log.
+   - Giá rẻ nhất với tần suất truy cập cực kỳ thấp.
+   - Có 3 loại:
+     - **Amazon S3 Glacier Instant Retrieval**: Cần file lấy ngay.
+     - **Amazon S3 Glacier Flexible Retrieval**: Cần file nhưng phải đợi một thời gian (rẻ hơn Instant Retrieval).
+     - **Amazon S3 Glacier Deep Archive**: Rẻ nhất nhưng lấy file lâu từ 12 đến 48h và yêu cầu lưu trữ tối thiểu 180 ngày.
+
+5. **Amazon S3 Intelligent-Tiering**  
+   - Dùng cho dữ liệu có mô hình truy cập thay đổi. S3 tự động chuyển các objects giữa các lớp lưu trữ để tối ưu chi phí và hiệu suất.
+
+
+## **Amazon S3 – Quy tắc Vòng đời (Kịch bản 1)**
+
+**Kịch bản:**  
+Ứng dụng trên EC2 tạo ra các ảnh thumbnail sau khi ảnh hồ sơ được tải lên Amazon S3. Các thumbnail này có thể dễ dàng được tạo lại và chỉ cần lưu trữ trong 60 ngày.  
+Ảnh gốc cần có khả năng truy xuất ngay lập tức trong 60 ngày đầu tiên, và sau đó người dùng có thể đợi tới 6 giờ để truy xuất.
+
+**Giải pháp thiết kế:**
+- **Ảnh gốc**: Lưu trên **S3 Standard** và cấu hình vòng đời để chuyển sang **S3 Glacier** sau 60 ngày.
+- **Thumbnail**: Lưu trên **S3 One-Zone IA** và cấu hình vòng đời để xóa (expire) sau 60 ngày.
+
+## **Amazon S3 – Quy tắc Vòng đời (Kịch bản 2)**
+
+**Kịch bản:**  
+Một quy định trong công ty yêu cầu các đối tượng S3 bị xóa phải có khả năng khôi phục ngay lập tức trong 30 ngày, mặc dù trường hợp này hiếm khi xảy ra. Sau khoảng thời gian đó và kéo dài đến 365 ngày, các đối tượng bị xóa phải có khả năng khôi phục trong vòng 48 giờ.
+
+**Giải pháp thiết kế:**
+- Kích hoạt **S3 Versioning** để duy trì các phiên bản đối tượng. Khi đối tượng bị xóa, chúng chỉ bị ẩn bởi một "delete marker" và có thể khôi phục lại được.
+- Chuyển các phiên bản không phải hiện tại (noncurrent versions) sang **S3 Standard IA** sau 30 ngày.
+- Chuyển các phiên bản không phải hiện tại sang **S3 Glacier Deep Archive** sau 365 ngày.
