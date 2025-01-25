@@ -1,4 +1,4 @@
-# **Bắt đầu với AWS**
+<img width="1131" alt="image" src="https://github.com/user-attachments/assets/97fcd3f8-fee1-463c-9c54-7bed36fd5afc" /># **Bắt đầu với AWS**
 ## **AWS Cloud History**
 
 ![image](https://github.com/user-attachments/assets/5f90e0b3-2e6e-4ea4-9dbf-95e3a1d38c24)
@@ -1317,3 +1317,194 @@ Một quy định trong công ty yêu cầu các đối tượng S3 bị xóa ph
 - Kích hoạt **S3 Versioning** để duy trì các phiên bản đối tượng. Khi đối tượng bị xóa, chúng chỉ bị ẩn bởi một "delete marker" và có thể khôi phục lại được.
 - Chuyển các phiên bản không phải hiện tại (noncurrent versions) sang **S3 Standard IA** sau 30 ngày.
 - Chuyển các phiên bản không phải hiện tại sang **S3 Glacier Deep Archive** sau 365 ngày.
+
+## **Amazon S3 Analytics – Storage Class Analysis**
+
+<img width="357" alt="image" src="https://github.com/user-attachments/assets/14ac7b05-a9f0-4078-87a4-c9f8e0e36689" />
+
+
+- Tính năng này cho phép xuất một file CSV, trong đó liệt kê tình trạng các tầng lưu trữ trong S3.
+- Dùng cho mục đích phân tích và đánh giá hiệu quả sử dụng các tầng lưu trữ.
+
+## **S3 – Requester Pays**
+
+<img width="624" alt="image" src="https://github.com/user-attachments/assets/64eca2d7-eb8b-4303-9209-25203bdb103f" />
+
+
+- Tính năng yêu cầu người dùng trả tiền cho chi phí networking khi sử dụng S3. Điều này bao gồm chi phí lưu trữ và truyền tải dữ liệu.
+- Khi áp dụng tính năng này, người dùng phải trả tiền khi tải file về và phải thực hiện trong môi trường AWS.
+- Trong thực tế, tính năng này ít khi được sử dụng, nhưng nên biết để tham khảo.
+
+
+## **S3 Event Notifications**
+
+<img width="440" alt="image" src="https://github.com/user-attachments/assets/9b1f458a-d8d0-411f-82b0-c79b4af9d5ab" />
+
+- Mỗi khi có thao tác trên S3, có thể bắt các sự kiện (events) và từ những sự kiện này, có thể trigger các service khác.
+- Ví dụ: Mỗi khi upload ảnh lên S3, có thể chạy Lambda để xử lý và thu nhỏ ảnh.
+- Hiện tại, S3 hỗ trợ 3 destinations: **SNS**, **SQS**, và **Lambda**.
+
+## **S3 – Baseline Performance**
+
+- Mỗi folder trên S3 có thể chịu được đồng thời:
+  - 3,500 **PUT/COPY/POST/DELETE** requests mỗi giây.
+  - 5,500 **GET/HEAD** requests mỗi giây (tương tự traffic).
+- Để tăng performance, nên chia nhỏ các folder. Nếu lưu tất cả vào 1 folder, với 1 triệu người dùng sẽ gây vấn đề hiệu suất.
+
+
+## **S3 Performance – Tính Năng Upload**
+
+- **Multi-Part Upload:**
+
+  <img width="458" alt="image" src="https://github.com/user-attachments/assets/f309ceb9-23e5-41b6-a30d-e2562980bfed" />
+
+  - Tính năng chia nhỏ files thành nhiều phần và upload song song các phần đó lên S3.
+  - Thường được sử dụng cho các file có dung lượng lớn hơn 5GB.
+
+- **S3 Transfer Acceleration:**
+
+  <img width="533" alt="image" src="https://github.com/user-attachments/assets/12073d44-ec69-44fc-bf8e-37e8bd14602f" />
+
+  - Tính năng tự động điều hướng request upload file đến điểm cung cấp dịch vụ gần nhất của AWS.
+  - Từ điểm cung cấp dịch vụ đó, dữ liệu sẽ được truyền qua đường truyền nội bộ và đến destination.
+
+## **S3 Performance – S3 Byte-Range Fetches**
+
+- Khi sử dụng **S3 Byte-Range Fetches**, bạn có thể chia nhỏ một file lớn thành các đoạn byte cụ thể và yêu cầu tải các đoạn đó song song.
+- Điều này giúp giảm thời gian tải dữ liệu. Nếu một đoạn tải thất bại, chỉ cần tải lại đoạn đó mà không phải tải lại toàn bộ file.
+
+## **S3 Select & Glacier Select**
+
+<img width="533" alt="image" src="https://github.com/user-attachments/assets/faf257c4-5c53-4655-8949-9d09c2ad8083" />
+
+- Tính năng cho phép thực hiện **query** trực tiếp trên file trong S3, giúp giảm bớt việc tải toàn bộ file về để xử lý.
+
+
+## **S3 Batch Operations**
+
+<img width="447" alt="image" src="https://github.com/user-attachments/assets/a3ef8355-73e3-4f47-a45d-e80c5f9d1a08" />
+
+- Tính năng áp dụng thao tác hàng loạt đối với các files, ví dụ: chỉnh sửa hàng loạt, gắn tags hàng loạt, xóa hàng loạt,…
+- Trong thực tế, tính năng này ít được sử dụng.
+
+
+## **S3 – Storage Lens**
+
+<img width="1131" alt="image" src="https://github.com/user-attachments/assets/37e19dfc-0c6e-489c-a2f1-2891bc2dc3db" />
+
+- Tính năng cho phép hiển thị toàn bộ tình trạng sử dụng S3 của bạn dưới dạng các dashboard.
+
+## **Amazon S3 – Object Encryption**
+
+S3 hỗ trợ 2 hình thức mã hóa:
+
+- **Server-Side Encryption (SSE):**  
+  Sau khi file được upload lên S3, nó sẽ được mã hóa.  
+  Có 3 loại:
+  - **SSE-S3**  
+  - **SSE-KMS**  
+  - **SSE-C**
+
+- **Client-Side Encryption:**  
+  Mã hóa file trước khi upload lên S3.
+
+## **Amazon S3 Encryption – SSE-S3**
+
+<img width="1061" alt="image" src="https://github.com/user-attachments/assets/0a776163-f6ec-4da9-9fdb-9cdbac4cf5e2" />
+
+- Đây là loại mã hóa mặc định trên S3. Nếu không chỉ định loại mã hóa, S3 sẽ tự động sử dụng SSE-S3.
+- Việc thực hiện mã hóa và giải mã sẽ do S3 tự động xử lý.
+
+
+## **Amazon S3 Encryption – SSE-KMS**
+
+<img width="1008" alt="image" src="https://github.com/user-attachments/assets/ac8fa8bb-326f-4154-b4d2-31da1712c57e" />
+
+- Việc thực hiện mã hóa và giải mã vẫn do S3 xử lý, nhưng khóa mã hóa (key) sẽ do bạn quản lý.
+- Bạn sẽ quản lý khóa mã hóa thông qua dịch vụ **AWS KMS** (Key Management Service).
+- Bạn có nhiều quyền hạn hơn để kiểm soát cách mã hóa, ví dụ:  
+  - Ai đã sử dụng khóa này để mã hóa dữ liệu.  
+  - Ai đã sử dụng khóa để tải dữ liệu xuống.
+
+## **Amazon S3 Encryption – SSE-C**
+
+<img width="976" alt="image" src="https://github.com/user-attachments/assets/b25c85eb-f3a2-41e1-b07c-fad0ee381d41" />
+
+- Khi upload file lên S3, bạn phải kèm theo key (key này do bạn tự quản lý).
+- Tính năng này thực tế ít được sử dụng.
+
+
+## **Amazon S3 Encryption – Client-Side Encryption**
+
+<img width="933" alt="image" src="https://github.com/user-attachments/assets/64bcf44b-0d4a-4f00-b704-45ca010f7a9c" />
+
+
+- **Client-Side Encryption** là quá trình mã hóa trước khi upload file lên S3, tương tự như việc gửi một file zip cho ai đó, bạn sẽ đặt mật khẩu cho file đó để mã hóa, và sau đó cung cấp mật khẩu cho người nhận để giải mã.
+- Cụ thể là bạn sẽ tạo mật khẩu cho file, mã hóa file và upload lên S3. Khi người dùng tải file về, họ cũng cần mật khẩu để giải mã file.
+
+
+## **Amazon S3 – Encryption in Transit (SSL/TLS): Mã Hóa Trên Đường Truyền**
+
+<img width="1017" alt="image" src="https://github.com/user-attachments/assets/56dbb6ae-0a8c-4a24-a1f4-1221ba7c248e" />
+
+- Để bảo mật dữ liệu khi truyền tải, cần cấu hình **bucket policies**.
+- Deny bất kỳ request nào sử dụng HTTP và chỉ cho phép HTTPS.
+
+
+## **Amazon S3 – CORS (Cross-Origin Resource Sharing)**
+
+<img width="1060" alt="image" src="https://github.com/user-attachments/assets/09f63f91-b720-494f-9d40-198ab775513e" />
+
+- Nếu hệ thống của bạn cần truy cập từ cùng một domain thì không có vấn đề gì, nhưng nếu frontend và backend ở các domain khác nhau, mặc định sẽ bị chặn.
+- Để cho phép các request này, bạn cần cấu hình **CORS**.
+  - Ví dụ: Nếu bạn host website trên **bucket 1** và muốn truy xuất file từ **bucket 2**, thì **bucket 2** phải cấu hình CORS để cho phép lấy file từ **bucket 1**.
+- Bạn có thể bật CORS trực tiếp từ **S3 Console**.
+
+
+## **S3 Access Logs**
+
+<img width="297" alt="image" src="https://github.com/user-attachments/assets/07eb40ca-2f93-4724-b74b-5df320ab1e16" />
+
+- Cơ chế ghi lại toàn bộ các request đến S3 và lưu trữ chúng sang một S3 bucket khác.
+- Ví dụ: Bạn có thể ghi lại thông tin ai đã xem file gì, xóa hay chỉnh sửa file nào. Điều này giúp bạn lưu lại thông tin để tránh việc xóa nhầm hoặc trong trường hợp bị tấn công, bạn vẫn có thể truy vết lại.
+
+
+
+## **Amazon S3 – Pre-Signed URLs**
+
+<img width="178" alt="image" src="https://github.com/user-attachments/assets/043034d5-1c45-4acf-815f-4da46400eaa3" />
+
+- **Pre-Signed URLs** cho phép cấp quyền truy cập tạm thời vào một file trên S3 cho người dùng ngoài hệ thống mà không cần cấp quyền trực tiếp.
+  - Ví dụ: Một file có trạng thái private sẽ bị từ chối truy cập. Nếu muốn người dùng truy cập vào file đó trong một thời gian nhất định mà không cần chỉnh sửa policies, bạn có thể sử dụng Pre-Signed URLs để cấp quyền tạm thời cho họ.
+
+
+## **S3 Glacier Vault Lock**
+
+<img width="369" alt="image" src="https://github.com/user-attachments/assets/20478c5a-88fe-4248-8996-f6b4c0c21879" />
+
+- Tính năng giống như một "hộp khóa" để bảo vệ các dữ liệu quan trọng, bạn có thể đóng lại và đảm bảo không ai có thể truy cập vào những thứ trong đó trong khoảng thời gian nhất định. Thường dùng để bảo quản các nội dung tuyệt mật.
+- Có 2 chế độ:
+  - **Compliance:** Người dùng có quyền cao nhất cũng không thể thao tác với Vault (tương tự như S3 Bucket).
+  - **Governance:** Người có quyền cao vẫn có thể chỉnh sửa và thay đổi Vault.
+
+
+## **S3 – Access Points**
+
+<img width="1027" alt="image" src="https://github.com/user-attachments/assets/17589624-b054-4efd-9147-727d608a579c" />
+
+- Cho phép tạo và chia sẻ nhiều điểm truy cập khác nhau đối với cùng một S3 bucket.
+- Mỗi folder có thể cung cấp một điểm truy cập riêng biệt, phục vụ từng đối tượng người dùng và đảm bảo tính bảo mật.
+- Truy cập S3 theo cách này tương tự như truy cập S3 thông thường.
+
+
+## **S3 Object Lambda**
+
+<img width="697" alt="image" src="https://github.com/user-attachments/assets/ace77657-0087-4f6b-9030-77969e216180" />
+
+- Cho phép gia công dữ liệu trước khi trả về người dùng.
+- Ví dụ: Có một file chung, nhưng ba hệ thống khác nhau sẽ yêu cầu định dạng dữ liệu khác nhau. Hệ thống 1 cần XML, hệ thống 2 cần JSON, và hệ thống 3 cần một định dạng khác.
+- Bạn phải viết chức năng xử lý dữ liệu trong **Lambda** để chuyển đổi các định dạng dữ liệu theo yêu cầu.
+
+
+
+
