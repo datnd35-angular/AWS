@@ -1,3 +1,168 @@
+
+# Diagram: Củng cố kiến thức AWS cho Developer
+
+### 1. **Kiến trúc tổng quan dịch vụ AWS**
+
+```
++-------------------------------------------------------+
+|                    🌐 AWS Global Cloud                |
++-------------------------------------------------------+
+| Region (ex: ap-southeast-1) → Availability Zones      |
+| → Data Centers → Resource Hosting (EC2, S3, etc.)     |
++-------------------------------------------------------+
+```
+
+### 2. **Compute – dịch vụ tính toán**
+
+```
++-------------------------+
+|     ⚙️ Compute Services  |
++-------------------------+
+| ✔ EC2 – máy chủ ảo      |
+| ✔ Lambda – serverless   |
+| ✔ Elastic Beanstalk – auto deploy app |
+| ✔ ECS / Fargate – container |
+| ✔ EKS – Kubernetes      |
++-------------------------+
+```
+
+> **Use case:**
+
+* EC2 → máy chủ backend
+* Lambda → xử lý sự kiện nhanh (API, cron job)
+* ECS → chạy Docker app
+
+
+### 3. **Storage – dịch vụ lưu trữ**
+
+```
++---------------------------+
+|      💾 Storage Services   |
++---------------------------+
+| ✔ S3 – object storage     |
+| ✔ EBS – disk cho EC2      |
+| ✔ EFS – shared file system |
+| ✔ Glacier – lưu trữ lâu dài |
++---------------------------+
+```
+
+> **Use case:**
+
+* Upload file người dùng → lưu vào **S3**
+* Lưu ảnh CDN → CloudFront + S3
+
+
+### 4. **Database Services**
+
+```
++-----------------------------+
+|     🗄️ Database Services     |
++-----------------------------+
+| ✔ RDS – SQL (MySQL, Postgres...) |
+| ✔ DynamoDB – NoSQL          |
+| ✔ Aurora – DB hiệu suất cao |
+| ✔ ElastiCache – cache Redis |
++-----------------------------+
+```
+
+> RDS dùng khi cần SQL chuẩn
+> DynamoDB dùng khi cần hiệu suất cao, scale dễ
+
+### 5. **Networking & Security**
+
+```
++-------------------------------+
+|   🌐 Networking & Security     |
++-------------------------------+
+| ✔ VPC – mạng ảo riêng          |
+| ✔ Security Groups – firewall  |
+| ✔ IAM – phân quyền            |
+| ✔ Route 53 – DNS & domain     |
+| ✔ API Gateway – RESTful API   |
++-------------------------------+
+```
+
+> IAM dùng để gán quyền: user, group, role
+> API Gateway + Lambda = serverless REST API
+
+
+### 6. **DevOps & CI/CD**
+
+```
++-------------------------------+
+|       ⚙️ DevOps Tools          |
++-------------------------------+
+| ✔ CodeCommit – Git repo       |
+| ✔ CodePipeline – CI/CD pipeline |
+| ✔ CodeBuild – build app       |
+| ✔ CloudFormation – IaC        |
+| ✔ Terraform – IaC phổ biến hơn |
++-------------------------------+
+```
+
+### 7. **Monitoring & Logging**
+
+```
++----------------------------+
+|    📊 Monitoring Tools     |
++----------------------------+
+| ✔ CloudWatch – log, alert |
+| ✔ X-Ray – trace request    |
+| ✔ CloudTrail – audit log   |
++----------------------------+
+```
+
+> CloudWatch: Xem log Lambda, EC2, các metric
+> X-Ray: Trace từng request qua service
+
+
+### 8. **Triển khai Frontend App (SPA)**
+
+```
++-----------------------------+
+|   🌐 Triển khai frontend    |
++-----------------------------+
+| ✔ S3 – chứa file build      |
+| ✔ CloudFront – CDN          |
+| ✔ Route53 – gắn domain      |
+| ✔ Certificate Manager – SSL |
++-----------------------------+
+```
+
+> `React / Angular / Vue` build → upload lên S3 → dùng CloudFront phân phối toàn cầu
+
+
+### 9. **Triển khai Backend App**
+
+```
++-----------------------------------+
+|         🧩 Backend Deployment      |
++-----------------------------------+
+| Option 1: EC2 + Nginx             |
+| Option 2: API Gateway + Lambda    |
+| Option 3: ECS (Fargate) + Docker |
+| Option 4: Elastic Beanstalk       |
++-----------------------------------+
+```
+
+
+### 10. **Best Practices**
+
+```
++---------------------------------------------+
+|            ✅ Best Practices AWS             |
++---------------------------------------------+
+| ✔ Sử dụng IAM Role đúng scope               |
+| ✔ Không hardcode secret, dùng Secrets Manager|
+| ✔ Dùng VPC riêng cho các dịch vụ quan trọng |
+| ✔ Dùng Multi-AZ cho DB                      |
+| ✔ Logging + Monitor qua CloudWatch          |
+| ✔ Tự động hóa bằng IaC (Terraform / CF)     |
++---------------------------------------------+
+```
+
+# Lý thuyết
+
 <img width="1131" alt="image" src="https://github.com/user-attachments/assets/97fcd3f8-fee1-463c-9c54-7bed36fd5afc" /># **Bắt đầu với AWS**
 ## **AWS Cloud History**
 
